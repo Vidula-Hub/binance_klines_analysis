@@ -10,5 +10,5 @@ def plot_with_outliers(df, outliers):
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig("close_price_outliers.png")  # Save plot
+    plt.savefig("close_price_outliers.png")
     plt.show()

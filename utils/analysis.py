@@ -1,7 +1,6 @@
 from pymongo import MongoClient
 import pandas as pd
 
-# Connect to MongoDB
 client = MongoClient("mongodb://localhost:27017/")
 db = client["binance_data"]
 collection = db["klines"]
@@ -13,12 +12,11 @@ def get_ohlc():
     data = list(collection.find({"open_time": {"$exists": True}}))
     if not data:
         print("❌ No data with 'open_time' found in the 'klines' collection.")
-        return pd.DataFrame()  # Return empty DataFrame
+        return pd.DataFrame()
     
     df = pd.DataFrame(data)
     df['open_time'] = pd.to_datetime(df['open_time'])
     
-    # Select only relevant columns for OHLC
     return df[['open_time', 'open', 'high', 'low', 'close']]
 
 def detect_outliers(df, column='close', threshold=3):
@@ -37,6 +35,5 @@ def detect_outliers(df, column='close', threshold=3):
     df['z_score'] = stats.zscore(df[column].astype(float))
     df['is_outlier'] = np.abs(df['z_score']) > threshold
 
-    # Optionally, you can drop the 'z_score' column before returning
     df.drop(columns=['z_score'], inplace=True)
     return df
