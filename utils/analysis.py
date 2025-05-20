@@ -11,7 +11,11 @@ def get_ohlc():
     """
     data = list(collection.find({"open_time": {"$exists": True}}))
     if not data:
-        print("❌ No data with 'open_time' found in the 'klines' collection.")
+
+        print("No data with 'open_time' found in the 'klines' collection.")
+        return pd.DataFrame()
+
+        print("No data with 'open_time' found in the 'klines' collection.")
         return pd.DataFrame()
     
     df = pd.DataFrame(data)
@@ -25,7 +29,7 @@ def detect_outliers(df, column='close', threshold=3):
     Returns the DataFrame with an added boolean column 'is_outlier'.
     """
     if df.empty:
-        print("❌ DataFrame is empty, cannot detect outliers.")
+        print("DataFrame is empty, cannot detect outliers.")
         return df
 
     from scipy import stats
