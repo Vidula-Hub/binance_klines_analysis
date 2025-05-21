@@ -65,3 +65,27 @@ if st.button("Fetch and Analyze"):
                     st.warning("No outliers detected with the current threshold. Try lowering the threshold.")
                 
                 st.plotly_chart(fig)
+
+
+
+
+
+                import requests
+import streamlit as st
+
+st.write("Testing API connection to Binance...")
+
+url = "https://api.binance.com/api/v3/klines"
+params = {
+    "symbol": "BTCUSDT",
+    "interval": "1h",
+    "startTime": 1704067200000,  # Example timestamp
+    "limit": 5
+}
+
+try:
+    res = requests.get(url, params=params)
+    st.write("Status code:", res.status_code)
+    st.write("Response (first 200 chars):", res.text[:200])
+except Exception as e:
+    st.error(f"API connection test failed: {str(e)}")
