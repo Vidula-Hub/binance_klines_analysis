@@ -6,6 +6,7 @@ from utils.db_handler import save_to_mongo
 from utils.analysis import get_ohlc, detect_outliers
 import datetime
 import time
+import requests
 
 st.title("Binance OHLC Dashboard")
 
