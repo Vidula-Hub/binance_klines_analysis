@@ -21,54 +21,32 @@ def fetch_klines(symbol, interval, start_time=None, end_time=None):
         "symbol": symbol,
         "interval": interval
     }
-    
-    # Add startTime and endTime to the parameters if provided
+
     if start_time is not None:
-        params["startTime"] = int(start_time * 1000)  # Convert to milliseconds
+        params["startTime"] = int(start_time * 1000)
     if end_time is not None:
-        params["endTime"] = int(end_time * 1000)      # Convert to milliseconds
-    
+        params["endTime"] = int(end_time * 1000)
+
     try:
         response = requests.get(url, params=params)
-        response.raise_for_status()  # Raise an exception for HTTP errors (e.g., 400, 429)
+        response.raise_for_status()
 
         data = response.json()
 
-        # Check if the response is a list (valid Kline data) or a dict (error response)
         if isinstance(data, dict) and "code" in data:
             print(f"❌ Binance API error: {data['msg']} (Code: {data['code']})")
-            return pd.DataFrame()  # Return empty DataFrame on error
+            return []
 
         if not data:
             print("❌ No data fetched from Binance for the given time range.")
-            return pd.DataFrame()
+            return []
 
-        df = pd.DataFrame(data, columns=[
-            "open_time", "open", "high", "low", "close", "volume",
-            "close_time", "quote_asset_volume", "number_of_trades",
-            "taker_buy_base_vol", "taker_buy_quote_vol", "ignore"
-        ])
-
-        # Convert time and price columns
-        df["open_time"] = pd.to_datetime(df["open_time"], unit='ms')
-        df[["open", "high", "low", "close"]] = df[["open", "high", "low", "close"]].astype(float)
-
-        return df[["open_time", "open", "high", "low", "close"]]
+        return data  # ✅ return list of lists, not DataFrame
 
     except requests.exceptions.RequestException as e:
         print(f"❌ Failed to fetch data from Binance: {str(e)}")
-        return pd.DataFrame()
+        return []
     except ValueError as e:
         print(f"❌ Failed to parse API response as JSON: {str(e)}")
         print(f"Response content: {response.text}")
-        return pd.DataFrame()
-
-def store_to_mongo(df):
-    records = df.to_dict(orient='records')
-    collection.insert_many(records)
-    print(f"Inserted {len(records)} records into MongoDB.")
-
-if __name__ == "__main__":
-    df = fetch_klines(symbol, interval, limit)
-    print(df.head())  # Optional: see sample data
-    store_to_mongo(df)
+        return []
