@@ -1,6 +1,5 @@
 from pymongo import MongoClient
 import os
-
 from utils.candle_utils import (
     binanceArrayToCandleStickArray,
     updateCandlePattern,
@@ -8,16 +7,17 @@ from utils.candle_utils import (
     analyze_hourly_data,
 )
 
-
-def save_to_mongo(data, db_name="binance_ohlc", collection_name="candlestick"):
+def save_to_mongo(data, db_name="binance_data", collection_name="klines"):
     mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
     client = MongoClient(mongo_uri)
     db = client[db_name]
     collection = db[collection_name]
     collection.delete_many({})
 
-    # CONVERT raw data to enriched candlestick objects
-    candles = binanceArrayToCandleStickArray(data, SYMBOL="BTCUSDT", PERIOD="1h")
+    # Make sure time columns are in milliseconds
+    raw_array = data[["open_time", "open", "high", "low", "close", "volume", "close_time"]].values.tolist()
+
+    candles = binanceArrayToCandleStickArray(raw_array, SYMBOL="BTCUSDT", PERIOD="1h")
     candles = updateCandlePattern(candles)
     candles = calculate_moving_average(candles, period=5)
 
@@ -29,6 +29,4 @@ def save_to_mongo(data, db_name="binance_ohlc", collection_name="candlestick"):
             candle.high_time = analysis["high_time"]
             candle.low_time = analysis["low_time"]
 
-        # Convert to dictionary before saving
         collection.insert_one(candle.to_dict())
-
